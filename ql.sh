@@ -14,12 +14,15 @@ if [ $# -eq 0 ]; then
 fi
 
 text="$*"
+timestamp=$(date '+%Y-%m-%d %H:%M:%S')
 
 if [ ! -f "$logbook_path" ]; then
-  echo "$text" > "$logbook_path"
+  echo "$timestamp" > "$logbook_path"
+  echo "$text" >> "$logbook_path"
 else
-  echo -e "\n\n$text" >> "$logbook_path"
+  echo -e "\n$timestamp" >> "$logbook_path"
+  echo -e "$text" >> "$logbook_path"
 fi
 
-echo "Log added to $logbook_path"
+echo "Text added to $logbook_path"
 
