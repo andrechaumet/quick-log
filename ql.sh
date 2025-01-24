@@ -1,5 +1,31 @@
-desktop_path="$HOME/Desktop"
-logbook_path="$desktop_path/logbook.txt"
+config_dir="$HOME/.config/quicklog"
+config_file="$config_dir/config.yaml"
+
+initialize_config() {
+  mkdir -p "$config_dir"
+  echo "The configuration file does not exist or is incomplete."
+  echo "Please specify the logbook directory."
+  read -e -p "Directory: " -i "$HOME/" user_dir
+
+  user_dir="${user_dir%/}"
+
+  if [ -d "$user_dir" ]; then
+    echo "Directory set to: $user_dir"
+  else
+    echo "$user_dir is an invalid directory. Exiting."
+    exit 1
+  fi
+
+  echo "logbook_path: $user_dir/logbook.txt" > "$config_file"
+  echo "Configuration saved to $config_file"
+}
+
+load_config() {
+  if [ ! -f "$config_file" ]; then
+    initialize_config
+  fi
+  logbook_path=$(awk '/logbook_path:/ {print $2}' "$config_file")
+}
 
 write_log() {
   timestamp=$(date '+%Y-%m-%d %H:%M:%S')
@@ -28,10 +54,7 @@ last_log() {
   fi
 }
 
-if [ ! -d "$desktop_path" ]; then
-  echo "Error: Desktop path not found: $desktop_path"
-  exit 1
-fi
+load_config
 
 if [ $# -eq 0 ]; then
   echo "Usage: ql {text}"
@@ -51,4 +74,3 @@ if [ "$1" == "-l" ]; then
 fi
 
 write_log "$logbook_path" "$*"
-
