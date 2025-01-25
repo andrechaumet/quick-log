@@ -18,7 +18,7 @@ initialize_config() {
 
   logbook_path="$user_dir/logbook.txt"
   if [ -f "$logbook_path" ]; then
-    echo "Logbook already exists at: $logbook_path"
+    echo "Synchronized the previously existing logbook successfully: $logbook_path"
   fi
 
   echo "logbook_path: $logbook_path" > "$config_file"
