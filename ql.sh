@@ -16,7 +16,12 @@ initialize_config() {
     exit 1
   fi
 
-  echo "logbook_path: $user_dir/logbook.txt" > "$config_file"
+  logbook_path="$user_dir/logbook.txt"
+  if [ -f "$logbook_path" ]; then
+    echo "Logbook already exists at: $logbook_path"
+  fi
+
+  echo "logbook_path: $logbook_path" > "$config_file"
   echo "Configuration saved to $config_file"
 }
 
