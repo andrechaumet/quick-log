@@ -32,7 +32,25 @@ load_config() {
   logbook_path=$(awk '/logbook_path:/ {print $2}' "$config_file")
 }
 
+ensure_decrypted_logbook() {
+  if [ -f "$logbook_path.gpg" ]; then
+    echo "⚠️ The logbook is encrypted. Please decrypt it first."
+    read -s -p "Enter decryption password: " passphrase
+    echo ""
+    gpg --batch --yes --passphrase "$passphrase" --decrypt "$logbook_path.gpg" > "$logbook_path"
+    if [ $? -eq 0 ]; then
+      rm -f "$logbook_path.gpg"
+      echo "✅ Logbook decrypted successfully."
+    else
+      echo "❌ Decryption failed. Exiting."
+      exit 1
+    fi
+  fi
+}
+
 write_log() {
+  ensure_decrypted_logbook
+
   timestamp=$(date '+%Y-%m-%d %H:%M:%S')
   text_with_timestamp="$timestamp\n$2"
   if [ ! -f "$1" ]; then
@@ -40,14 +58,14 @@ write_log() {
   else
     echo -e "\n\n$text_with_timestamp" >> "$1"
   fi
-  echo "Text added to $1"
+  echo "📝 Text added to $1"
 }
 
 read_logs() {
   if [ -f "$1" ]; then
     less "$1"
   else
-    echo "No logbook found at $1"
+    echo "🚫 No logbook found at $1"
   fi
 }
 
@@ -55,7 +73,37 @@ last_log() {
   if [ -f "$1" ]; then
     awk -v RS= 'END {print $0}' "$1"
   else
-    echo "No logbook found at $1"
+    echo "🚫 No logbook found at $1"
+  fi
+}
+
+encrypt_log() {
+  if [ ! -f "$logbook_path" ]; then
+    echo "🚫 No logbook found to encrypt."
+    exit 1
+  fi
+
+  gpg --batch --yes --passphrase "$1" --symmetric --cipher-algo AES256 "$logbook_path"
+  if [ $? -eq 0 ]; then
+    rm -f "$logbook_path"
+    echo "✅ Logbook encrypted successfully."
+  else
+    echo "❌ Encryption failed."
+  fi
+}
+
+decrypt_log() {
+  if [ ! -f "$logbook_path.gpg" ]; then
+    echo "🚫 No encrypted logbook found."
+    exit 1
+  fi
+
+  gpg --batch --yes --passphrase "$1" --decrypt "$logbook_path.gpg" > "$logbook_path"
+  if [ $? -eq 0 ]; then
+    rm -f "$logbook_path.gpg"
+    echo " Logbook decrypted successfully."
+  else
+    echo "❌ Decryption failed."
   fi
 }
 
@@ -63,19 +111,17 @@ load_config
 
 if [ $# -eq 0 ]; then
   echo "Usage: ql {text}"
-  echo "       ql -r     # To read the logbook"
-  echo "       ql -l     # To show the last log entry"
+  echo "       ql -r         # To read the logbook"
+  echo "       ql -l         # To show the last log entry"
+  echo "       ql -e {key}   # To encrypt the logbook"
+  echo "       ql -de {key}  # To decrypt the logbook"
   exit 1
 fi
 
-if [ "$1" == "-r" ]; then
-  read_logs "$logbook_path"
-  exit 0
-fi
-
-if [ "$1" == "-l" ]; then
-  last_log "$logbook_path"
-  exit 0
-fi
-
-write_log "$logbook_path" "$*"
+case "$1" in
+  -r) read_logs "$logbook_path" ;;
+  -l) last_log "$logbook_path" ;;
+  -e) encrypt_log "$2" ;;
+  -de) decrypt_log "$2" ;;
+  *) write_log "$logbook_path" "$*" ;;
+esac
