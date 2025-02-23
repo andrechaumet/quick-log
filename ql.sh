@@ -50,16 +50,17 @@ ensure_decrypted_logbook() {
 
 write_log() {
   ensure_decrypted_logbook
+  if [ ! -f "$1" ]; then
+    echo "🚫 No logbook found at $1"
+    return 1
+  fi
 
   timestamp=$(date '+%Y-%m-%d %H:%M:%S')
   text_with_timestamp="$timestamp\n$2"
-  if [ ! -f "$1" ]; then
-    echo -e "$text_with_timestamp" > "$1"
-  else
-    echo -e "\n\n$text_with_timestamp" >> "$1"
-  fi
+  echo -e "\n\n$text_with_timestamp" >> "$1"
   echo "📝 Text added to $1"
 }
+
 
 read_logs() {
   if [ -f "$1" ]; then
