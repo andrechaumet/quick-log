@@ -1,6 +1,6 @@
 # QuickLog - Minimalist CLI Logbook
 
-QuickLog is a simple command-line tool for logging thoughts quickly. It strong supports encryption and decryption for privacy.
+QuickLog is a simple command-line tool for quickly logging thoughts. It provides strong encryption and decryption for privacy.
 
 ## Installation
 ```bash
