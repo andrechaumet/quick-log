@@ -16,11 +16,12 @@ sudo mv ql.sh /usr/local/bin/ql
 ### Adding an Entry
 
 ```bash
-ql "Your log entry"
+ql Your log entry
 ```
 
 - If this is your first time using QuickLog, it will ask you to configure the logbook directory.
 - If the logbook is encrypted, it will prompt you to decrypt it before adding new entries.
+- If your entry contains special characters, enclose it in double quotes, e.g., "Your log entry".
 
 ### Reading the Logbook
 
